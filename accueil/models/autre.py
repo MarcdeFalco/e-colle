@@ -1,5 +1,6 @@
 # -*- coding:utf8 -*-
 from django.db import models, connection
+from django.db.models import Count
 from django.db.models.signals import post_delete, post_save
 from django.dispatch import receiver
 import os
@@ -65,6 +66,16 @@ class Creneau(models.Model):
 
     class Meta:
         ordering=['jour','heure','salle','pk']
+
+    def matiere_usuelle(self):
+        if self.colle_set.count() == 0:
+            return None
+        return self.colle_set.annotate(cc=Count('matiere')).order_by('-cc')[0].matiere
+
+    def colleur_usuel(self):
+        if self.colle_set.count() == 0:
+            return None
+        return self.colle_set.annotate(cc=Count('colleur')).order_by('-cc')[0].colleur
 
     def __str__(self):
         return "{}/{}/{}h{:02d}".format(self.classe.nom,semaine[self.jour],self.heure//60,(self.heure%60))
