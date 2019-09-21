@@ -34,7 +34,7 @@ def date_plus_jour(dateSQL, jourSQL):
     elif BDD == 'mysql':
         return "{} + INTERVAL {} DAY".format(dateSQL, jourSQL)
     elif BDD == 'sqlite3':
-        return "date({},'+{} days')".format(dateSQL, jourSQL)
+        return "date({},'+'||{}||' days')".format(dateSQL, jourSQL)
     else:
         return "" # à compléter par ce qu'il faut dans le cas ou vous utilisez 
                   # un SGBD qui n'est ni mysql, ni postgresql, ni sqlite ni oracle
