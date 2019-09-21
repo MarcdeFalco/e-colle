@@ -145,7 +145,7 @@ def repondre(request,message_id):
 	if form.is_valid():
 		mesage = Message(auteur=request.user,listedestinataires=str(message.auteur),titre=form.cleaned_data['titre'],corps=form.cleaned_data['corps'])
 		mesage.save()
-		Destinataire(user=message.auteur,message=message).save()
+		Destinataire(user=message.auteur,message=mesage).save()
 		messagees.error(request, "Message envoyé")
 		destinataire.reponses +=1
 		destinataire.save()
@@ -161,10 +161,10 @@ def repondreatous(request,message_id):
 	message = message.first()
 	destinataires  = list(message.messagerecu.all())
 	if message.auteur.username in ['admin','Secrétariat']:
-		returHttpResponseForbidden("Vous n'avez pas le droit de répondre")
+		return HttpResponseForbidden("Vous n'avez pas le droit de répondre")
 	if message.auteur == request.user: # si on répond à un message qu'on a envoyé
 		if request.user.eleve and not Config.objects.get_config().message_eleves:
-			returHttpResponseForbidden("Vous n'avez pas le droit de répondre")
+			return HttpResponseForbidden("Vous n'avez pas le droit de répondre")
 	else:
 		desti = get_object_or_404(Destinataire,message=message,user=request.user)
 		if request.user.eleve and desti.reponses and not Config.objects.get_config().message_eleves:
