@@ -5,6 +5,56 @@ from django.db.models import Count
 from datetime import date, timedelta, datetime, time, timezone
 
 class ColleManager(models.Manager):
+    def classe2colloscope_transpose(self,classe,semin,semax,modif=False):
+        # Nommé ainsi car l'objectif est de renvoyer le tableau avec une ligne
+        # par créneau de colleur
+        import time
+
+        semaines = Semaine.objects.filter(lundi__range=(semin.lundi,semax.lundi))
+        creneaux = Creneau.objects.filter(classe=classe).order_by('jour',
+                'heure', 'salle').select_related()
+        colles = Colle.objects.filter(creneau__in=creneaux).select_related()
+        colles = list(colles) # force query
+
+        def getColle(s,c):
+            for colle in colles:
+                if colle.semaine.id == s.id and colle.creneau_id == c.id:
+                    return colle
+            raise Colle.DoesNotExist
+
+        semaines_completees = []
+
+        for creneau in creneaux:
+            semaine_creneau = []
+
+            first_colle = None
+            for semaine in semaines:
+                try:
+                    #colle = creneau.colle_set.get(semaine=semaine)
+                    #colle = colles.get(creneau=creneau, semaine=semaine)
+                    colle = getColle(semaine, creneau)
+                    semaine_creneau.append( colle )
+                    first_colle = colle
+                       
+                except Colle.DoesNotExist:
+                    semaine_creneau.append( None )
+
+            semaines_completees.append( (None if first_colle is None else first_colle.matiere,
+                creneau, first_colle, semaine_creneau) )
+
+        semaines_completees.sort(key=lambda t: (t[0].nom if t[0] else '',
+            t[2].colleur.user.last_name if t[2] else '') )
+
+
+        colloscope = []
+        matiere_prec = None
+        for sem in semaines_completees:
+            if sem[0] != matiere_prec:
+                colloscope.append( (sem[0],None,None,None) )
+                matiere_prec = sem[0]
+            colloscope.append(sem)
+
+        return semaines, colloscope
 
     def classe2colloscope(self,classe,semin,semax,modif=False):
         semaines=Semaine.objects.filter(lundi__range=(semin.lundi,semax.lundi))
