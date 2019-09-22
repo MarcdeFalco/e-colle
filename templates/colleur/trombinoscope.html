@@ -1,0 +1,24 @@
+{% extends 'colleur/action.html' %}
+{% load static %}
+{% load customfilter %}
+{% block body %}
+
+<div class="ui text container">
+<h2>Trombinoscope de la {{ classe.nom }}</h2>
+
+<div class="ui six cards trombinoscope">
+{% for eleve in eleves %}
+    <div class="card">
+        <div class="image">
+            <img width="100px" src="/media/{% if eleve.photo %}{{ eleve.photo }}{% else %}photos/nophoto2.jpg{% endif %}" />
+        </div>
+        <div class="content">
+            <div class="header">{{ eleve.user.last_name|capfirst }}</div>
+            <div class="meta">{{ eleve.user.first_name|capfirst}}</div>
+        </div>
+    </div>
+{% endfor %}
+</div>
+
+</div>
+{% endblock %}

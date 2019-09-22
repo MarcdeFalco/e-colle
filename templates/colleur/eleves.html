@@ -3,30 +3,40 @@
 {% load customfilter %}
 {% block body %}
 {% get_mathjax as latex %}
+    <div class="ui text container">
+        <h1 class="ui center aligned icon header">
+            <i class="circular users icon"></i>
+            Élèves
+        </h1>
+
+    <div class="ui center aligned">
 <form method="POST">
 {% csrf_token %}
-<table class="tableausimple">
+<table class="ui table">
 <tr>
 	<td>Semaine</td>
 	<td>{{form2.semin.erros}}{{form2.semin}}</td>
 	<td>à</td>
 	<td>{{form2.semax.erros}}{{form2.semax}}</td>
-	<td><input type="submit" name='semaines' value="Valider"/></td>
+	<td><input class="ui button primary" type="submit" name='semaines' value="Valider"/></td>
 </tr>
 </table>
 </form>
 
 <form method="POST">
 {% csrf_token %}
-<table class="tableausimple">
+<table class="ui table">
 {{ form.as_table }}
-<tr><td colspan="2"><input type = "submit", name ="eleveselect" value = "Valider"/></td></tr>
+<tr><td colspan="2"><input class="ui button primary" type = "submit", name ="eleveselect" value = "Valider"/></td></tr>
 </table>
 </form>
+    </div>
 
 {% if eleve and semin and semax %}
-<table class="accueil"><tr><td>Résultats de l'élève {{eleve}} en {{eleve.classe}}</td></tr></table>
-<table class="tableausimple">
+<h2>
+            Résultats de l'élève {{eleve}} en {{eleve.classe}}
+</h2>
+<table class="ui table">
 	<tr>
 		<th>Matière</th>
 		<th>Moyenne</th>
@@ -52,6 +62,8 @@
 {% endfor %}
 </table>
 {% endif %}
+
+    </div>
 {% endblock %}
 {% block javascript %}
 {% get_mathjax as latex %}

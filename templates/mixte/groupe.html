@@ -1,18 +1,27 @@
 {% extends user.colleur|yesno:'colleur/action.html,secretariat/action.html' %}
 {% load static %}
 {% block body %}
-<table class="accueil"><tr><td>Groupes de {{classe}}</td></tr></table>
-<table class="tableausimple" id="suppr">
-	<tr class="entete">
-		<td>Groupe</td>
-		<td>Élève n°1</td>
-		<td>Élève n°2</td>
-		<td>Élève n°3</td>
-		<td>Modifier</td>
-		<td>Supprimer</td>
-	</tr>
+<div class="ui text container">
+    <h1 class="ui center aligned icon header">
+        <i class="circular users icon"></i>
+            Groupes de {{classe}}
+    </h1>
+</div>
+<div class="ui container">
+<table class="ui table" id="suppr">
+    <thead>
+        <tr>
+		<th>Groupe</th>
+		<th>Élève n°1</th>
+		<th>Élève n°2</th>
+		<th>Élève n°3</th>
+		<th>Modifier</th>
+		<th>Supprimer</th>
+        </tr>
+    </thead>
+    <tbody>
 	{% for groupe in groupes %}
-	<tr {% cycle '' "class=plusclair" %}>
+    <tr>
 		<td>{{groupe.nom}}</td>
 		{% for eleve in groupe.groupeeleve.all %}
 		<td>{{eleve}}</td>
@@ -28,16 +37,20 @@
 		<td><a href="{% url user.colleur|yesno:'groupemodif_colleur,groupemodif_secret' groupe.pk %}">Modifier</a></td>
 		<td><a href="{% url user.colleur|yesno:'groupesuppr_colleur,groupesuppr_secret' groupe.pk %}">Supprimer</a></td>
 	{% endfor %}
+    </tbody>
 </table>
-<table class="accueil"><tr><td>Nouveau groupe</td></tr></table>
+<h3>Nouveau groupe</h3>
+<div class="ui text container">
 <form method="POST">
 {% csrf_token %}
-<table class="tableausimple">
+<table class="ui table">
 	<input type="hidden" id="hide" value="{{hide}}"></input>
 	{{ form.as_table }}
-	<tr><td colspan="2"><input type="submit"/></td></tr>
+	<tr><td colspan="2"><input class="ui button primary" type="submit"/></td></tr>
 </table>
 </form>
+</div>
+</div>
 {% endblock %}
 {% block javascript %}
 <script type="text/javascript" src="{% static 'javascript/suppression.js' %}"></script>

@@ -4,38 +4,54 @@
 {% block body %}
 {% get_mathjax as latex %}
 {% if form %}
-<table class="accueil"><tr><td>Ajouter un programme de colle</td></tr></table>
+    <div class="ui text container">
+        <h1 class="ui center aligned icon header">
+            <i class="circular pencil alternate icon"></i>
+Ajouter un programme de colle
+    </div>
 {% include "colleur/programmeform.html" %}
 {% endif %}
-<table class="accueil"><tr><td>Programmes de la classe {{classe}} en {{matiere}}</td></tr></table>
-<table class="tableausimple" id="suppr">
-	<tr class="entete">
-		<td>Semaines</td>
-		<td>Titre</td>
-		<td>Détails</td>
-		<td>Fichier</td>
-		{% if isprof %}
-		<td>Modifier</td>
-		<td>Supprimer</td>
-		{% endif %}
-	</tr>
+    <div class="ui text container">
+        <h1 class="ui center aligned icon header">
+            <i class="circular book icon"></i>
+Programmes de la classe {{classe}} en {{matiere}}
+    </div>
+    <div class="ui text container">
 	{% for programme in programmes %}
-	<tr>
-		<td>{% for sem in programme.semaine.all %}{{sem}}{% if not forloop.last%}<br/>{% endif %}{% endfor %}</td>
-		<td>{{programme.titre}}</td>
-		<td class="prog_colle">{% if latex %}{{programme.detail}}{% else %}{{programme.detail|linebreaksbr}}{% endif %}</td>
-		{% if programme.fichier %}
-		<td style="height:200px;width:150px">{% if jpeg %}<a class="image" href="{{programme.fichier.url}}"><img src="{{programme.fichier.url|image}}" alt="mini jpeg programme"/></a>{% else %}<a href="{{programme.fichier.url}}"><img src="{% static 'images/iconePDF.png' %}" alt="icone pdf"/></a>{% endif %}</td>
-		{% else %}
-		<td></td>
-		{% endif %}
+    <div class="ui segments">
+        <div class="ui horizontal segments">
+            <div class="ui segment blue">
+                <b>Semaine</b>
+                {% for sem in programme.semaine.all %}
+                    {{sem}}{% if not forloop.last%}, {% endif %}
+                {% endfor %}
+            </div>
+            <div class="ui segment blue inverted">
+                {{ programme.titre }}
+            </div>
+            {% if programme.fichier %}
+            <div class="ui segment">
+		        <a class="ui button"
+                   href="{{programme.fichier.url}}">Fichier associé</a>
+            </div>
+            {% endif %}
+        </div>
+        <div class="ui segment">
+		    {{programme.detail|linebreaksbr}}
+        </div>
 		{% if isprof %}
-		<td><a href="{% url 'programmemodif_colleur' programme.pk %}">Modifier</a></td>
-		<td><a href="{% url 'programmesuppr_colleur' programme.pk %}">Supprimer</a></td>
-		{% endif %}
-	</tr>
-	{% endfor %}
-</table>
+        <div class="ui horizontal segments">
+            <div class="ui segment">
+		<a class="ui button primary" href="{% url 'programmemodif_colleur' programme.pk %}">Modifier</a>
+            </div>
+            <div class="ui segment">
+		<a class="ui button primary" href="{% url 'programmesuppr_colleur' programme.pk %}">Supprimer</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    {% endfor %}
+    </div>
 {% endblock %}
 {% block javascript %}
 {% get_mathjax as latex %}

@@ -2,19 +2,26 @@
 {% load static %}
 {% load customfilter %}
 {% block body %}
-<table class="accueil"><tr><td>Décompte</td></tr></table>
+
+<div class="ui text container">
+    <h1 class="ui center aligned icon header">
+        <i class="circular euro symbol icon"></i>
+        Décompte
+    </h1>
+
 {% for matiere,listeclasses,listemois in listematieres %}
-<table class="accueil"><tr><td>{{matiere|title}}</td></tr></table>
-<table class="tableausimple">
-	<tr class="entete">
-		<td>Classe</td>
+<h1>{{ matiere|title }}</h1>
+
+<table class="ui table striped">
+    <tr>
+		<th>Classe</th>
 	{% for mois in listemois %}
-		<td>{{mois|date:"E Y"}}</td>
+		<th>{{mois|date:"E Y"}}</th>
 	{% endfor %}
-		<td>Total</td>
+		<th>Total</th>
 	</tr>
 	{% for classe,nbcolles,total in listeclasses %}
-	<tr {% cycle '' 'class="plusclair"'%}>
+    <tr>
 		<td>{{classe}}</td>
 		{% for nb in nbcolles %}
 		<td>{{nb.temps|heurecolle}}</td>
@@ -23,6 +30,34 @@
 	</tr>
 	{% endfor %}
 </table>
-
 {% endfor %}
+
+{% if est_prof %}
+<h2>Décompte de tous les colleurs</h2>
+
+    <table class="ui table striped">
+        <tr>
+            <th>Colleur</th>
+            <th>Matière</th>
+            {% for classe in decompte_classes %}
+            <th>{{ classe }}</th>
+            {% endfor %}
+            <th>Total</th>
+        </tr>
+
+        {% for colleur, matiere, liste, total in decompte_colleur %}
+        <tr>
+            <td>{{ colleur }}</td>
+            <td>{{ matiere.nom }}</td>
+            {% for t in liste %}
+            <td>{% if t %}{{ t|heurecolle }}{% endif %}</td>
+            {% endfor %}
+            <td>{{ total|heurecolle }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+
+{% endif %}
+
+</div>
 {% endblock %}

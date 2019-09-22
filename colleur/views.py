@@ -538,23 +538,69 @@ def colleNoteEleve(request,id_colle):
 	
 @user_passes_test(is_colleur, login_url='accueil')
 def decompte(request):
-	"""Renvoie la vue de la page du décompte des colles"""
-	colleur=request.user.colleur
-	matieres=colleur.matieres.order_by().values_list('nom',flat=True).distinct()
-	classes=colleur.classes.all()
-	listematieres=[]
-	for matiere in matieres:
-		listemois = Note.objects.filter(colleur=colleur,matiere__nom__iexact=matiere).dates('date_colle','month').distinct()
-		listeclasses=[]
-		for classe in classes:
-			nbcolles=[]
-			for mois in listemois:
-				nbcolles.append(Note.objects.filter(colleur=colleur,matiere__nom__iexact=matiere,classe=classe,date_colle__month=mois.month,date_colle__year=mois.year).aggregate(temps=Sum('matiere__temps')))
-			total=Note.objects.filter(colleur=colleur,matiere__nom__iexact=matiere,classe=classe).aggregate(temps=Sum('matiere__temps'))
-			listeclasses.append((classe,nbcolles,total))
-		listematieres.append((matiere,listeclasses,listemois))
-		listematieres.sort(key=lambda x:x[0])
-	return render(request,"colleur/decompte.html",{'listematieres':listematieres})
+    """Renvoie la vue de la page du décompte des colles"""
+    colleur=request.user.colleur
+    matieres=colleur.matieres.order_by().values_list('nom',flat=True).distinct()
+    classes=colleur.classes.all()
+    listematieres=[]
+
+    for matiere in matieres:
+        o_matiere = Matiere.objects.get(nom__iexact=matiere)
+        listemois = Note.objects.filter(colleur=colleur,matiere__nom__iexact=matiere).dates('date_colle','month').distinct()
+        listeclasses=[]
+        for classe in classes:
+            nbcolles=[]
+            for mois in listemois:
+                nbcolles.append(Note.objects.filter(colleur=colleur,matiere__nom__iexact=matiere,classe=classe,date_colle__month=mois.month,date_colle__year=mois.year).aggregate(temps=Sum('matiere__temps')))
+            total=Note.objects.filter(colleur=colleur,matiere__nom__iexact=matiere,classe=classe).aggregate(temps=Sum('matiere__temps'))
+
+            listeclasses.append((classe,nbcolles,total))
+
+        listematieres.append((matiere,listeclasses,listemois))
+        listematieres.sort(key=lambda x:x[0])
+
+    est_prof = False
+
+    decompte_classes = []
+    decompte_colleur = []
+
+    if colleur.colleurprof.count() > 0:
+        est_prof = True
+
+        colleur_classes_id = colleur.colleurprof.values_list('classe',flat=True)
+        colleur_classes = Classe.objects.filter(id__in=colleur_classes_id).distinct()
+
+        decompte_classes = list(colleur_classes)
+
+        d = {}
+
+        for prof in colleur.colleurprof.all():
+            classe = prof.classe
+            matiere = prof.matiere
+            
+            colleurs_geres = classe.colleur_set.filter(matieres=matiere)
+
+            for colleur in colleurs_geres:
+                t = Note.objects.filter(classe=classe,colleur=colleur,matiere=matiere).aggregate(temps=Sum('matiere__temps'))
+                if (colleur,matiere) not in d:
+                    d[colleur, matiere] = {}
+                d[colleur,matiere][classe] = t['temps']
+
+        decompte_colleur = [ ]
+        for colleur, matiere in d:
+            cm = d[colleur, matiere]
+            l = []
+            for classe in decompte_classes:
+                l.append(cm[classe] if classe in cm else None)
+
+            total = sum([ x for x in l if x is not None ])
+
+            decompte_colleur.append((colleur,matiere,l,total))
+
+    return render(request,"colleur/decompte.html",{'listematieres':listematieres, 
+        'est_prof':est_prof, 
+        'decompte_classes':decompte_classes,
+        'decompte_colleur': decompte_colleur })
 
 @user_passes_test(is_colleur, login_url='accueil')
 def colloscopePdf(request,id_classe,id_semin,id_semax):

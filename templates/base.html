@@ -5,6 +5,33 @@
 <head>
 	<meta charset="utf-8"/>
 	<link rel="icon" href="{% static 'images/calendar-48px.png' %}">
+
+    <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+    <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/semantic-ui@2.4.2/dist/semantic.min.js"></script>
+
+	<script text="javascript">
+		$(document).ready( function() {
+			$('.ui.dropdown').dropdown();
+
+			  var
+				$popup = $('.popupholder[data-html]');
+			  ;
+			  $popup
+				.popup({
+				})
+			  ;
+
+
+            {% if request.GET.print %}
+            window.print();
+            {% endif %}
+
+{% block javascriptready %}
+{% endblock %}
+		});
+	</script>
+
     {% if user.is_authenticated %}
        {% with 'css/'|add:user.css as css_static %} 
 	     <link rel="stylesheet" href="{% static css_static %}" />
@@ -13,43 +40,66 @@
     	{% get_css as default_css %}
 	   <link rel="stylesheet" href="{% static default_css %}" />
     {% endif %} 
+<style>
+    {% block style %}
+.tablecentered {
+    width: auto !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+}
+
+    {% endblock %}
+</style>
 	<title>e-colle v2.1</title>
 
 
 </head>
-<body id="body">
-	<div id="bloc">
-		<div class="cote">
+<body id="body" style="overflow-x:scroll !important;" class="fluid">
+	<div class="ui container fluid">
+        {% if request.GET.print %}
+        {% else %}
+	 	<div class="ui container">
+            <a href={% url 'accueil' %}>
+            <h1 class="ui block aligned center header">
+                <div class"content">
+                    Gestionnaire de colles
+                    <div class="sub header"><!-- nom établissement -->{{0|nometab}}</div>
+                </div>
+            </h1>
+            </a>
+
 			{% if user.is_authenticated %}
+            <div class="ui menu">
 			{% if user.colleur %}
-			<ul class="accueil">
-				<li>{{user.first_name|title}}<br>{{user.last_name|upper}}</li>
-				{% for matiere in user.colleur.matieres.all %}<li> {% ifnotequal request.session.matiere matiere.pk %}<a href="{% url 'changemat_colleur' matiere.pk %}">{{matiere}}</a>{% else %}{{matiere}}{% endifnotequal %}</li>{% endfor %}
-			</ul>
+                <div class="item">{{user.first_name|title}} {{user.last_name|upper}}</div>
+				{% for matiere in user.colleur.matieres.all %}
+                    {% ifnotequal request.session.matiere matiere.pk %}
+                        <a class="item" href="{% url 'changemat_colleur' matiere.pk %}">{{matiere}}</a>
+                    {% else %}
+                        <div class="item active blue">{{matiere}}</div>
+                    {% endifnotequal %}
+                {% endfor %}
 			{% elif user.eleve %}
-			<ul class="accueil">
-				<li>{{user.first_name|title}}<br>{{user.last_name|upper}}</li>
-				<li>{{user.eleve.classe.nom}}</li>
-				{% if user.eleve.lv1 %}
-				<li>LV1: {{user.eleve.lv1.nom|title}}</li>
-				{% endif %}
-				{% if user.eleve.lv2 %}
-				<li>LV2: {{user.eleve.lv2.nom|title}}</li>
-				{% endif %}
-			</ul>
-			{% elif user.username == 'admin' %}
-			<ul class="accueil">
-				<li>Administrateur</li>
-			</ul>
+                <div class="item">{{user.first_name|title}} {{user.last_name|upper}} - {{ user.eleve.classe }}</div>
+            {% elif user.username == 'admin' %}
+				<div class="item">Administrateur</div>
 			{% elif user.username == 'Secrétariat' %}
-			<ul class="accueil">
-				<li>Secrétariat</li>
-			</ul>
 			{% endif %}
-			{% endif %}
-		</div>
-		<div id="bloc_page">
-                  <div id="header"><h1><a href="{%url 'accueil' %}">Gestionnaire de colles</a><br/><!-- nom établissement -->{{0|nometab}}</h1></div>
+            <div class="right menu">
+                <a class="item" href="{% url 'deconnexion' %}">Déconnexion</a>
+                <a class="item" href="{% url 'profil' %}">Modifier profil</a>
+                <a class="item"  href="{% url 'messages' %}">
+                    <i class="icon mail"></i> Messages
+                    {% if user.messagesnonlus %}
+                    <div class="floating ui red label">
+                    {{user.messagesnonlus}}
+                    </div>
+                    {% endif %}
+                </a>
+            </div>
+            </div>
+            {% endif %}
+
 			{% block nav%}
 			{% endblock %}
 			{% block message %}
@@ -59,17 +109,14 @@
 			{% endfor %}
 			{% endif %}	
 			{% endblock %}
+            </div>
+            <div class="ui divider" />
+		</div>
+		</div>
+        {% endif %}
+        <div class="ui fluid container">
 			{% block body %}
 			{% endblock %}
-		</div>
-		<div class="cote">
-			<ul class="accueil">
-				{% if user.is_authenticated %}
-				<li><a href="{% url 'deconnexion' %}">Déconnexion</a></li>
-				<li><a href="{% url 'profil' %}">Modifier profil</a></li>
-				<li><a {% if user.messagesnonlus %} style="{% for i in 'xxxx' %} background: {% cycle '' '-moz-' '-o-' '-webkit-'%}linear-gradient(top, #FF0000,  #0f0f0f) ;{% endfor %}" {% endif %} href="{% url 'messages' %}">Messages({{user.messagesnonlus}}/{{user.totalmessages}})</a></li>
-				{% endif %}
-			</ul>
 		</div>
 	</div>
 {% block javascript %}

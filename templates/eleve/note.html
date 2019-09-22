@@ -3,24 +3,34 @@
 {% load customfilter %}
 {% block body %}
 {% get_mathjax as latex %}
-<table class="accueil"><tr><td>Liste des notes</td></tr></table>
+
+    <div class="ui text container">
+        <h1 class="ui center aligned icon header">
+            <i class="circular pencil alternate icon"></i>
+Liste des notes
+        </h1>
 <form method="POST">
 	{% csrf_token %}
-	<table class="tableausimple">
+	<table class="ui table">
 		{{ form.as_table }}
-		<tr><td colspan="2"><input type="submit"/></td></tr>
+		<tr><td colspan="2"><input class="ui button primary" type="submit"/></td></tr>
 	</table>
 </form>
-<table class="tableausimple">
+    </div>
+
+<div class="ui container">
+<table class="ui table striped">
 <tr class="entete">
 	{% if not matiere %}
-	<td>Matière</td>
+	<th>Matière</th>
 	{% endif %}
-	<td>Date</td>
-	<td>Colleur</td>
-	<td>Programme</td>
-	<td>Note</td>
-	<td>Commentaire</td>
+	<th>Date</th>
+	<th>Colleur</th>
+	<th>Programme</th>
+	<th>Note</th>
+    {% comment %}
+	<th>Commentaire</th>
+    {% endcomment %}
 </tr>
 {% for note in notes %}
 	<tr>
@@ -31,10 +41,13 @@
 		<td>{{note.prenom|title}} {{note.nom|upper}}</td>
 		<td>{% if note.titre != None %}{{note.titre|title}}<div class="popup">{% if latex %}{{note.programme}}{% else %}{{note.programme|linebreaksbr}}{% endif %}</div>{% endif %}</td>
 		<td>{% ifequal note.note 21 %}n.n{% else %}{% ifequal note.note 22 %}Abs{% else %}{{note.note}}{% endifequal %}{% endifequal %}</td>
+        {% comment %}
 		<td>{% if note.commentaire %}lire<div class="popup">{% if latex %}{{note.commentaire}}{% else %}{{note.commentaire|linebreaksbr}}{% endif %}</div>{% endif %}</td>
+        {% endcomment %}
 	</tr>
 {% endfor %}
 </table>
+</div>
 {% endblock %}
 {% block javascript %}
 {% get_mathjax as latex %}

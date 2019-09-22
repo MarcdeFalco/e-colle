@@ -1,13 +1,17 @@
 {% extends user.colleur|yesno:'colleur/action.html,secretariat/action.html' %}
 {% load static %}
 {% block body %}
-	<table class="accueil"><tr><td>Modification d'un groupe de {{groupe.classe}}</td></tr></table>
+<div class="ui text container">
+    <h1 class="ui center aligned icon header">
+        <i class="circular users icon"></i>
+Modification d'un groupe de {{groupe.classe}}
+    </h1>
 	<form method="POST">
 	{% csrf_token %}
-	<table class="tableausimple">
+	<table class="ui table">
 		<input type="hidden" id="hide" value="{{hide}}"></input>
 		{{ form.as_table }}
-		<tr><td colspan="2"><input type="submit"/></td></tr>
+		<tr><td colspan="2"><input class="ui button primary" type="submit"/></td></tr>
 	</table>
 	</form>
 {% endblock %}

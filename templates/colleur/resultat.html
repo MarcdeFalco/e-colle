@@ -3,10 +3,17 @@
 {% load customfilter %}
 {% block body %}
 {% get_mathjax as latex %}
-<table class="accueil"><tr><td>Résultats de la classe {{classe}} en {{matiere}}</td></tr></table>
+    <div class="ui text container">
+        <h1 class="ui center aligned icon header">
+            <i class="circular chart line icon"></i>
+           Résultats de la classe {{classe}} en {{matiere}}
+        </h1>
+
+        <div>
+            <div class="ui container">
 <form method="POST">
 {% csrf_token %}
-<table class="tableausimple">
+<table class="ui table">
 <tr>
 	<td>Semaine</td>
 	<td>{{form.semin.erros}}{{form.semin}}</td>
@@ -17,17 +24,20 @@
 </tr>
 </table>
 </form>
-<table class="tableausimple">
+<table class="ui table striped">
+    <thead>
 	<tr class="entete">
-		<td>Élève</td>
-		<td>Rang</td>
-		<td>Moyenne</td>
+		<th>Élève</th>
+		<th>Rang</th>
+		<th>Moyenne</th>
 	{% for semaine in semaines %}
-		<td>S{{semaine.numero}}</td>
+		<th>S{{semaine.numero}}</th>
 	{% endfor %}
 	</tr>
+    </thead>
+    <tbody>
 	{% for note in notes %}
-	<tr {% cycle "" "class=plusclair"%}>
+    <tr>
 		<td>{{note.eleve}}</td>
 		{% if note.rang %}
 		<td>{{note.rang}}{{note.rang|pluralize:"<sup>er</sup>,<sup>&egrave;me</sup>"|safe}}</td>
@@ -42,19 +52,24 @@
 		{% endfor %}
 	</tr>
 	{% endfor %}
+    </tbody>
 </table>
+</div>
 {% if isprof %}
-<table class="accueil"><tr><td>Moyenne des colleurs:</td></tr></table>
-<table class="tableausimple">
-<tr class="entete">
-	<td>Colleur</td>
-	<td>Moyenne</td>
-	<td>Min</td>
-	<td>Max</td>
-	<td>&sigma;</td>
+<div class="ui container text">
+<h1>Moyenne des colleurs:</h1>
+<table class="ui table striped">
+    <thead>
+        <tr>
+	<th>Colleur</th>
+	<th>Moyenne</th>
+	<th>Min</th>
+	<th>Max</th>
+	<th>&sigma;</th>
 </tr>
+    </thead><tbody>
 {% for value in stats %}
-<tr {% cycle '' 'class="plusclair"'%} >
+<tr>
 	<td>{{value.colleur__user__first_name|title}} {{value.colleur__user__last_name|upper}}</td>
 	<td>{{value.moy|floatformat:1}}</td>
 	<td>{{value.minimum}}</td>
@@ -62,6 +77,7 @@
 	<td>{{value.ecarttype|floatformat:1}}</td>
 </tr>
 {% endfor %}
+    </tbody>
 </table>
 {% endif %}
 {% endblock %}

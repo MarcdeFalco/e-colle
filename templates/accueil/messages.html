@@ -2,33 +2,39 @@
 {% load customfilter %}
 {% load static %}
 {% block body %}
-<table class="accueil">
-	<tr>
-		<td>Liste des messages</td>
-		{% if peut_composer %}
-			<td><a href="{% url 'ecrire' %}">Écrire un message</a></td>
-		{% endif %}
-	</tr>
-</table>
+    <div class="ui text container">
+        <h1 class="ui center aligned icon header">
+            <i class="circular mail icon"></i>
+            Liste des messages
+        </h1>
 
+{% if peut_composer %}
+    <a class="ui button large primary" href="{% url 'ecrire' %}">Écrire un message</a>
+{% endif %}
+    </div>
+
+    <div class="ui container">
 {% if nonvide %}
 <form method="post">
 	{% csrf_token %}
-	<table class="tableausimple" id="suppr">
+	<table class="ui table striped" id="suppr">
 	<tr class="entete">
-		<td>Sélectionner{{form.message.errors}}</td>
-		<td>Lire</td>
-		<td>date</td>
-		<td>reçu</td>
-		<td>envoyé</td>
-		<td>lu</td>
-		<td>auteur</td>
-		<td>Destinataires</td>
-		<td>sujet</td>
+		<th>Sélectionner{{form.message.errors}}</th>
+		<th>Lire</th>
+		<th>date</th>
+		<th>reçu</th>
+		<th>envoyé</th>
+		<th>lu</th>
+		<th>auteur</th>
+		<th>Destinataires</th>
+		<th>sujet</th>
 	</tr>
 	{% for message,widget in form.fields.message.queryset|tzip:form.message %}
 	{% with message|getLu:user as lu %}
+    {% comment %}
 	<tr {% if lu.1 %} style="color:#550000;" {% else %} style="color:#005500;" {% endif%}>
+    {% endcomment %}
+    <tr>
 		<td>{{widget}}</td>
 		<td><a href="{% url 'message' message.pk %}">Lire</a></td>
 		<td>{% if not lu.0 %}<b>{% endif %}{{message.date|date:"D d M Y à H:i:s"}}{% if not lu.0 %}</b>{% endif %}</td>
@@ -37,7 +43,7 @@
 		<td>{% if lu.0 %} ✓ {% endif %}</td>
 		<td>{% if not lu.0 %}<b>{% endif %} {{message.auteur}} {% if not lu.0 %}</b>{% endif %}</td>
 		<td>{% if not lu.0 %}<b>{% endif %} {{message.listedestinataires|truncatechars:200}} {% if not lu.0 %}</b>{% endif %}</td>
-		<td>{% if not lu.0 %}<b>joufsdhnnnnnhpiùsdgpùsgih{% endif %} {{message.titre}} {% if not lu.0 %}</b>{% endif %}</td>
+		<td>{% if not lu.0 %}<b>{% endif %} {{message.titre}} {% if not lu.0 %}</b>{% endif %}</td>
 	</tr>
 	{% endwith %}
 	{% endfor %}
@@ -51,7 +57,8 @@
 
 </table>
 </form>
-<table class="accueil"><tr><td><a href="{% url 'accueil' %}">Retour</a></td></tr></table>
+            <a class="ui button huge primary" href="{% url 'accueil' %}">Retour</a>
+    </div>
 {% endblock %}
 {% block javascript %}
 <script type="text/javascript" src="{% static 'javascript/suppression.js' %}"></script>

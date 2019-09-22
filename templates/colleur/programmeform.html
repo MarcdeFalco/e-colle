@@ -1,6 +1,7 @@
+<div class="ui text container">
 <form method="post" enctype="multipart/form-data">
 	{% csrf_token %}
-	<table class="tableausimple">
+	<table class="ui table striped labelcompact">
 		<tr>
 			<th> {{ form.semaine.label_tag }} </th>
 			<td colspan="4"> {{ form.semaine.errors }} {% for widget in form.semaine %} {{widget}}{% cycle '' '' '' '<br />'%}{% endfor %}</td>
@@ -17,6 +18,8 @@
 			<th> {{ form.fichier.label_tag }} </th>
 			<td> {{ form.fichier.errors }} {{form.fichier}}</td>
 		</tr>
-		<tr><td colspan="2"><input type="submit"/></td></tr>
+		<tr><td colspan="2"><input class="ui button large" type="submit"
+                value="Ajouter"/></td></tr>
 	</table>
 </form>
+</div>

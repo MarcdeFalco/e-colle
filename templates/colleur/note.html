@@ -4,12 +4,21 @@
 {% block body %}
 {% get_mathjax as latex %}
 {% with request.session.matiere|get_matiere as matiere %}
-<table class="accueil"><tr><td>Notes de la classe {{classe}} en {{matiere}}</td></tr></table>
+    <div class="ui text container">
+        <h1 class="ui center aligned icon header">
+            <i class="circular pencil alternate icon"></i>
+            Notes de la classe {{classe}} en {{matiere}}
+        </h1>
+    </div>
 {% endwith %}
+<div class="ui container">
 <form method="post">
 	{% csrf_token %}
-<table class="tableausimple">
-	<tr class="entete"><td colspan="4">Élèves de {{classe.nom}}</td></tr>
+<table class="ui table striped">
+    <thead>
+	<tr><th colspan="4">Élèves de {{classe.nom}}</th></tr>
+    </thead>
+    <tbody>
 	{% with form.groupe|titer as groupe_iter %}
 	{% for widget in form.eleve %}
 	{% if forloop.first %}
@@ -17,7 +26,7 @@
 	{% else %}
 	{% cycle '0' '1' '2' '3' '4' '5' as rank silent %}
 		{% if rank  == '0' or rank == '3' %}
-			<tr {% if rank == '0' %}class="plusclair"{% endif%}>
+        <tr>
 				<td>{% with groupe_iter|tnext as groupe %}
 						{% if groupe != None %}
 							{{groupe}}
@@ -36,39 +45,43 @@
 	{% if form.errors %}
 	<tr><td colspan="4">{{ form.errors.eleve }}</td></tr>
 	{% endif %}
-	<tr><td colspan="4"><input type="submit" value="Noter"/></td></tr>
+	<tr><td colspan="4"><input class="ui button primary huge center" type="submit" value="Noter"/></td></tr>
+    </tbody>
 </table>
 </form>
 
-<table class="tableausimple" id="suppr">
-	<tr class="entete">
-		<td>Semaine</td>
-		<td>Programme</td>
-		<td>Date</td>
-		<td>Heure</td>
-		<td>Élève</td>
-		<td>Note</td>
-		<td>Commentaire</td>
-		<td>Modifier</td>
-		<td>Supprimer</td>
+<table class="ui table striped" id="suppr">
+    <thead>
+	<tr>
+		<th>Semaine</th>
+		<th>Programme</th>
+		<th>Date</th>
+		<th>Heure</th>
+		<th>Élève</th>
+		<th>Note</th>
+		<th>Commentaire</th>
+		<th>Modifier</th>
+		<th>Supprimer</th>
 	</tr>
+    </thead>
+    <tbody>
 	{% for semaine, titre, detail, listeDates, nbDates in notes %}
-	<tr {% cycle '' 'class="plusclair"' as couleur %} >
+    <tr>
 		<td rowspan="{{nbDates}}">{{ semaine }}</td>
 		<td rowspan="{{nbDates}}">{{ titre }}{% if detail %}<div class="popup">{% if latex %}{{item.2}}{% else %}{{item.2|linebreaksbr}}{% endif %}</div>{% endif %}</td>
 		{% for dateColle, listeHeures, nbHeures in listeDates %}
 		{% if not forloop.first %}
-	<tr {{couleur}}>
+        <tr>
 		{% endif %}
 		<td rowspan="{{nbHeures}}">{{dateColle|date:"l j F"}}</td>
 			{% for heure, colles, nbColles in listeHeures %}
 			{% if not forloop.first %}
-	<tr {{couleur}}>
+            <tr>
 			{% endif %}
 		<td rowspan="{{nbColles}}">{{heure|heure}}</td>
 				{% for colle in colles %}
 				{% if not forloop.first %}
-	<tr {{couleur}}>
+    <tr>
 				{% endif %}
 		<td>{{colle.0}}</td>
 		<td>{% if colle.1 == 22 %}Abs.{% elif colle.1 == 21 %}n.n.{% else %}{{colle.1}}{% endif %}</td>
@@ -80,7 +93,9 @@
 			{% endfor %}
 		{% endfor %}
 	{% endfor %}
+    </tbody>
 </table>
+    </div>
 {% endblock %}
 {% block javascript %}
 {% get_mathjax as latex %}

@@ -1,45 +1,62 @@
 {% extends 'eleve/action.html' %}
 {% load static %}
 {% block body %}
-<table class="accueil"><tr><td>Résumé des notes</td></tr></table>
+
+    <div class="ui text container">
+        <h1 class="ui center aligned icon header">
+            <i class="circular pencil alternate icon"></i>
+Résumé des notes
+        </h1>
+    </div>
+
+<div class="ui container">
 <form method="POST">
 {% csrf_token %}
-<table class="tableausimple">
+<table class="ui table striped">
 <tr>
-	<td>Semaine</td>
-	<td>{{form.semin.erros}}{{form.semin}}</td>
-	<td>à</td>
-	<td>{{form.semax.erros}}{{form.semax}}</td>
-	<td><input type="submit"/></td>
+	<th>Semaine</th>
+	<th>{{form.semin.erros}}{{form.semin}}</th>
+	<th>à</th>
+	<th>{{form.semax.erros}}{{form.semax}}</th>
+	<th><input class="ui button primary" type="submit"/></th>
 </tr>
 </table>
 </form>
-<table class="tableausimple">
-<tr class="entete">
-	<td>Matière</td>
-	<td>Rang</td>
-	<td>Moyenne</td>
-	<td>Moyenne de classe</td>
-	<td>Min</td>
-	<td>Max</td>
-	<td>Nb de notes</td>
-	<td>&sigma;</td>
+<table class="ui table striped">
+<tr>
+	<th>Matière</th>
+    {% comment %}
+	<th>Rang</th>
+    {% endcomment %}
+	<th>Moyenne</th>
+    {% comment %}
+	<th>Moyenne de classe</th>
+	<th>Min</th>
+	<th>Max</th>
+	<th>Nb de notes</th>
+	<th>&sigma;</th>
+    {% endcomment %}
 </tr>
 {% for moyenne in moyennes %}
 	<tr>
 		<td style="background-color:{{moyenne.matiere__couleur}}">{{moyenne.matiere__nom|title}}</td>
+        {% comment %}
 		{% if moyenne.rang %}
 		<td>{{moyenne.rang}}{{moyenne.rang|pluralize:"<sup>er</sup>,<sup>&egrave;me</sup>"|safe}}</td>
 		{% else %}
 		<td></td>
 		{% endif %}
+        {% endcomment %}
 		<td>{{moyenne.note__avg|floatformat:"1"}}</td>
+        {% comment %}
 		<td>{{moyenne.noteclasse__avg|floatformat:"1"}}</td>
 		<td>{{moyenne.note__min}}</td>
 		<td>{{moyenne.note__max}}</td>
 		<td>{{moyenne.note__count}}</td>
 		<td>{{moyenne.note__stddev|floatformat:"1"}}</td>
+        {% endcomment %}
 	</tr>
 {% endfor %}
 </table>
+</div>
 {% endblock %}

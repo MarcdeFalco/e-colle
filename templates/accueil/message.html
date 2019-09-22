@@ -2,7 +2,8 @@
 {% load customfilter %}
 {% block body %}
 
-<table class="tableausimple">
+<div class="ui text container">
+<table class="ui table">
 	<tr>
 		<th>Message de: </td>
 		<td>{{message.auteur}}</td>
@@ -31,8 +32,9 @@
 	</tr>
 </table>
 {% if repondre %}
-<table class="accueil"><tr>{% if not envoye %}<td><a href="{% url 'repondre' message.pk %}">Répondre</a></td>{% endif %}
-}<td><a href="{% url 'repondreatous' message.pk %}">Répondre à tous</a></td></tr></table>
+{% if not envoye %}<a class="ui button huge" href="{% url 'repondre' message.pk %}">Répondre</a>{% endif %}
+<a class="ui button huge" href="{% url 'repondreatous' message.pk %}">Répondre à tous</a>
 {% endif %}
-<table class="accueil"><tr><td><a href="{% url 'messages' %}">Retour</a></td></tr></table>
+<a class="ui button huge" href="{% url 'messages' %}">Retour</a>
+</div>
 {% endblock %}

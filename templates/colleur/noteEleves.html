@@ -1,11 +1,15 @@
 {% extends 'colleur/action.html' %}
 {% load static %}
 {% block body %}
+<div class="container ui text">
 <form method="POST">
 {% csrf_token %}
 {{ formset.management_form }}
-	<table class="tableausimple">
-	<tr class="entete"><td colspan="5">Notation {{ classe }} en {{matiere.nomcomplet|title}}</td></tr>
+	<table class="ui table striped">
+        <thead>
+	<tr><th colspan="5">Notation {{ classe }} en {{matiere.nomcomplet|title}}</th></tr>
+        </thead>
+        <tbody>
 	{% if formset.non_form_errors %}
 	<tr><td colspan="5">{{formset.non_form_errors}}</td></tr>
 	{% endif %}
@@ -32,9 +36,11 @@
 			<td colspan="3">{{formEleve.commentaire.errors}}{{formEleve.commentaire.label_tag}}{{formEleve.commentaire}}</td>
 		</tr>
 		{% endfor %}
-		<tr><td colspan="5"><input type="submit"/></td></tr>
+		<tr><td colspan="5"><input class="ui button primary large" type="submit" value="Valider"/></td></tr>
+        </tbody>
 	</table>
 </form>
+</div>
 {% endblock %}
 {% block javascript %}
 <script type="text/javascript" src="{% static 'javascript/rattrapage.js' %}"></script>

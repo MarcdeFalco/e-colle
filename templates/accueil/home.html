@@ -1,13 +1,25 @@
 {% extends 'base.html' %}
-{% block nav %}
-<div id="nav"> 
-	<ul id="menu">
-		<li><a href="{% url 'login_eleve' %}" title="consulter le(s) programme(s) de colle ou ses notes de colle">Élève</a></li>
-		<li><a href="{% url 'login_colleur' %}" title="entrer les notes de colle ou le programme de colle">Colleur</a></li>
-		<li><a href="{% url 'login_secret' %}" title ="décompte des heures des colleurs" >Secrétariat</a></li>
+{% block body %}
+<div class="ui text container">
+    <div class="ui grid aligned center">
+        <div class="row">
+            <div class="column eight wide">
+		<a class="ui button circular massive" href="{% url 'login_eleve' %}" title="consulter le(s) programme(s) de colle ou ses notes de colle">Élève</a>
+            </div>
+            <div class="column eight wide">
+		<a class="ui button circular massive" href="{% url 'login_colleur' %}" title="entrer les notes de colle ou le programme de colle">Colleur</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="column eight wide">
+		<a class="ui button circular massive" href="{% url 'login_secret' %}" title ="décompte des heures des colleurs" >Secrétariat</a>
+            </div>
 		{% if show_admin %}
-		<li><a href="{% url 'login_admin' %}" title="gérer les bases de données colleurs/élèves">Administrateur</a></li>
+            <div class="column eight wide">
+		<a class="ui button circular massive" href="{% url 'login_admin' %}" title="gérer les bases de données colleurs/élèves">Administrateur</a>
+            </div>
 		{% endif %}
-	</ul>
+        </div>
+    </div>
 </div>
 {% endblock %}

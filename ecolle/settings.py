@@ -20,6 +20,7 @@ ADMINS = (
     ('admin', 'admin@example.com'),
 )
 
+DEFAULT_CSS = "new_style.css"
 DEFAULT_CSS = "style.css"
 
 DATABASES = {
