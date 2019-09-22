@@ -419,25 +419,80 @@ def eleve(request):
 @ip_filter
 def elevecsv(request):
     """Renvoie la vue de la page d'ajout d'élèves via un fichier CSV"""
-    form = CsvForm(request.POST or None, request.FILES or None,initial = {'nom':'Nom','prenom':'Prénom', 'ddn': 'Date de naissance', 'ldn': 'Commune', 'ine': 'Numéro INE','email':'Adresse mail'})
+    form = CsvForm(request.POST or None, request.FILES or None,initial = {'nom':'Nom','prenom':'Prénom', 'ddn': 'Date de naissance', 'ldn': 'Commune', 'ine': 'Numéro INE','email':'Adresse mail','classe_champ':'Classe'})
+
+    def chercheEleve(nom, prenom):
+        try:
+            e = Eleve.objects.get(user__last_name=nom,
+                    user__first_name=prenom)
+            return e
+        except Eleve.DoesNotExist:
+            return None
+
+    def getClasse(nom):
+        return Classe.objects.get(nom=nom)
+
+    def cleanDate(d):
+        import re
+        r = re.compile(r'(?P<jour>\d\d)/(?P<mois>\d\d)/(?P<annee>\d\d\d\d)')
+        m = r.match(d)
+        if m is not None:
+            jour, mois, annee = m.group('jour'), m.group('mois'), m.group('annee')
+
+        return '%s-%s-%s' % (annee, mois, jour)
+
     if form.is_valid():
         try:
             with TextIOWrapper(form.cleaned_data['fichier'].file,encoding = 'utf8') as fichiercsv:
                 dialect = csv.Sniffer().sniff(fichiercsv.read(4096))
-                nom,prenom,ddn,ldn,ine,email=form.cleaned_data['nom'],form.cleaned_data['prenom'],form.cleaned_data['ddn'],form.cleaned_data['ldn'],form.cleaned_data['ine'],form.cleaned_data['email']
+                nom,prenom,ddn,ldn,ine,email,classe_champ=form.cleaned_data['nom'],form.cleaned_data['prenom'],form.cleaned_data['ddn'],form.cleaned_data['ldn'],form.cleaned_data['ine'],form.cleaned_data['email'],form.cleaned_data['classe_champ']
                 fichiercsv.seek(0)
                 reader = csv.DictReader(fichiercsv, dialect=dialect)
                 ligne = next(reader)
+                touslesChamps = len(ligne)
+                ligneValide = lambda l : l[nom] != '' and l[prenom] != ''
                 if not(nom in ligne and prenom in ligne):
-                    messages.error("Les intitulés des champs nom et/ou prénom sont inexacts")
+                    messages.error(request, "Les intitulés des champs nom et/ou prénom sont inexacts")
                 else:
                     fichiercsv.seek(0)
                     next(reader)
-                    initial = [{'last_name': ligneLoc[nom],'first_name':ligneLoc[prenom],'ddn':None if ddn not in ligneLoc else ligneLoc[ddn],'ldn':None if ldn not in ligneLoc else ligneLoc[ldn],\
-                    'ine':'' if ine not in ligneLoc else ligneLoc[ine],'email':'' if email not in ligneLoc else ligneLoc[email],'classe':form.cleaned_data['classe']} for ligneLoc in reader]
+                    initial = []
+                    for ligneLoc in reader:
+                        if not ligneValide(ligneLoc):
+                            continue
+
+                        eleve = chercheEleve(ligneLoc[nom], ligneLoc[prenom])
+
+                        if eleve is None:
+                            initial_data = {}
+
+                            initial_data['last_name'] = ligneLoc[nom]
+                            initial_data['first_name'] = ligneLoc[prenom]
+                            initial_data['ddn'] = None if ddn not in ligneLoc else ligneLoc[ddn]
+                            initial_data['ldn'] = None if ldn not in ligneLoc else ligneLoc[ldn]
+                            initial_data['ine'] = '' if ine not in ligneLoc else ligneLoc[ine]
+                            initial_data['email'] = '' if email not in ligneLoc else ligneLoc[email]
+                            initial_data['classe'] = getClasse(ligneLoc[classe_champ]) if classe_champ in ligneLoc else form.cleaned_data['classe']
+                            initial.append( initial_data )
+                        else:
+                            if ldn in ligneLoc:
+                                eleve.ldn = ligneLoc[ldn]
+                            if ddn in ligneLoc:
+                                eleve.ddn = cleanDate(ligneLoc[ddn])
+                            if ine in ligneLoc:
+                                eleve.ine = ligneLoc[ine]
+                            if email in ligneLoc:
+                                u = eleve.user
+                                u.email = ligneLoc[ine]
+                                u.save()
+                            eleve.save()
+
+
+
                     return eleveajout(request,initial=initial)
-        except Exception:
+        except Exception as e:
                 messages.error(request,"Le fichier doit être un fichier CSV valide, encodé en UTF-8")
+                messages.error(request,repr(e))
                 return redirect('csv_eleve')
     return render(request,'administrateur/elevecsv.html',{'form':form})
 
