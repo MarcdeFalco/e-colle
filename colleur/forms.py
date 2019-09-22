@@ -143,6 +143,9 @@ class ColleForm(forms.Form):
         self.fields['duree']=forms.ChoiceField(label="Durée",choices=DUREE)
         self.fields['frequence']=forms.ChoiceField(label="Fréquence",choices=FREQUENCE)
         self.fields['permutation']=forms.ChoiceField(label="Permutation des groupes",choices=PERMUTATION)
+        SEMAINES=[ (semaine.numero, '%d:%s' % (semaine.numero, semaine.lundi)) for semaine in Semaine.objects.all() ] 
+        self.fields['aeviter']=forms.MultipleChoiceField(label='Semaines à éviter', 
+                choices=SEMAINES, required=False)
 
 class EleveForm(forms.Form):
     def __init__(self,classe,*args,**kwargs):
