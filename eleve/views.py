@@ -1,6 +1,7 @@
 #-*- coding: utf-8 -*-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
+from mixte.mixte import mixtecolloscope
 from eleve.forms import EleveConnexionForm, MatiereForm
 from colleur.forms import SemaineForm
 from accueil.models import Note, Programme, Colle, Semaine, Groupe
@@ -95,14 +96,8 @@ def colloscope(request):
 	if form.is_valid():
 		semin=form.cleaned_data['semin']
 		semax=form.cleaned_data['semax']
-	listegroupes = dict()
-	for groupe in Groupe.objects.filter(classe=classe):
-		elevegroupe="; ".join([eleve['user__first_name'].title()+' '+eleve['user__last_name'].upper() for eleve in groupe.groupeeleve.values('user__first_name','user__last_name')])
-		listegroupes[groupe.pk] = [groupe.nom,elevegroupe]
-	jours,creneaux,colles,semaines = Colle.objects.classe2colloscope(classe,semin,semax)
-	return render(request,'eleve/colloscope.html',
-	{'semin':semin,'semax':semax,'form':form,'classe':classe,'jours':jours,'creneaux':creneaux,'listejours':["lundi","mardi","mercredi","jeudi","vendredi","samedi"],'collesemaine':zip(semaines,colles),'listegroupes':listegroupes,'dictColleurs':classe.dictColleurs(semin,semax)})
-
+	return mixtecolloscope(request,classe,semin,semax,isprof=False,iseleve=True)
+	
 @user_passes_test(is_eleve, login_url='accueil')
 def agenda(request):
 	"""Renvoie la page de la vue de consultation de l'agenda"""
