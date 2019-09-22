@@ -85,3 +85,14 @@ def getLu(message,user):
         return True, False
     else:
         return Destinataire.objects.filter(message=message,user=user).values_list("lu",flat=True).first(), True
+
+@register.filter
+def couleur_numero(numero):
+    couleurs = [ '#1abc9c', '#2ecc71', '#f1c40f', '#e67e22',
+      '#c0392b', '#bdc3c7', '#2c3e50', '#9b59b6', '#6ab04c',
+      '#130f40', '#4834d4', '#e056fd', '#7ed6df', '#2f3542',
+      '#ff6348', '#3742fa' ]
+    numero = int(numero)
+    return couleurs[numero % len(couleurs)]
+
+
