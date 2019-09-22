@@ -3,7 +3,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login
 from colleur.forms import ColleurConnexionForm, ProgrammeForm, SemaineForm, EleveForm, MatiereECTSForm, SelectEleveForm, NoteEleveForm, NoteEleveFormSet, ECTSForm, SelectEleveNoteForm, NoteElevesHeadForm, NoteElevesTailForm, NoteElevesFormset
 from accueil.models import Config, Colleur, Matiere, Prof, Classe, Note, Eleve, Semaine, Programme, Groupe, Creneau, Colle, MatiereECTS, NoteECTS
-from mixte.mixte import mixtegroupe, mixtegroupesuppr, mixtegroupemodif, mixtecolloscope, mixtecolloscopemodif, mixtecreneaudupli, mixtecreneausuppr, mixteajaxcompat, mixteajaxcolloscope, mixteajaxcolloscopeeleve, mixteajaxmajcolleur, mixteajaxcolloscopeeffacer, mixteajaxcolloscopemulti, mixteajaxcolloscopemulticonfirm
+from accueil.models.colle import ColleManager
+from mixte.mixte import mixtegroupe, mixtegroupesuppr, mixtegroupemodif, mixtecolloscope, mixtecolloscopemodif_new, mixtecolloscopemodif, mixtecreneaudupli, mixtecreneausuppr, mixteajaxcompat, mixteajaxcolloscope, mixteajaxcolloscopeeleve, mixteajaxmajcolleur, mixteajaxcolloscopeeffacer, mixteajaxcolloscopemulti, mixteajaxcolloscopemulticonfirm
 from django.contrib import messages
 from django.contrib.auth.decorators import user_passes_test
 from django.db.models import Avg, Min, Max, StdDev, Sum
@@ -284,13 +285,88 @@ def groupeModif(request,id_groupe):
 	
 @user_passes_test(is_colleur, login_url='accueil')
 def colloscope(request,id_classe):
-	"""Renvoie la vue de la page de gestion du colloscope de la classe dont l'id est id_classe"""
-	semaines=list(Semaine.objects.all())
-	try:
-		semin,semax=semaines[0],semaines[-1]
-	except Exception:
-		raise Http404
-	return colloscope2(request,id_classe,semin.pk,semax.pk)
+    """Renvoie la vue de la page de gestion du colloscope de la classe dont l'id est id_classe"""
+    semaines=list(Semaine.objects.all())
+    try:
+        # FIXME remplacer semax par semaine max effective
+        semaines_true=list(Semaine.objects.filter(colle__creneau__classe__id=id_classe))
+
+        semin,semax=semaines[0],semaines[-1]
+
+        istart = 0
+
+        while istart < len(semaines) and semaines[istart] not in semaines_true:
+            istart += 1
+
+        if istart < len(semaines):
+            semin = semaines[istart]
+            iend = len(semaines)-1
+
+            while istart < iend and semaines[iend] not in semaines_true:
+                iend -= 1
+
+            semax = semaines[iend]
+
+    except Exception:
+        raise Http404
+    return colloscope2(request,id_classe,semin.pk,semax.pk)
+
+@user_passes_test(is_colleur, login_url='accueil')
+def colloscope_csv(request,id_classe):
+    semaines=list(Semaine.objects.all())
+    semin,semax=semaines[0],semaines[-1]
+
+    classe = Classe.objects.get(id=id_classe)
+
+    csv = 'matiere, jour, heure, nom colleur, prenom colleur, salle, '
+    csv += ', '.join([ str(semaine.numero) for semaine in semaines ])
+    csv += '\n'
+
+    semaine = ["lundi", "mardi","mercredi","jeudi","vendredi", "samedi","dimanche"]
+
+    semaines, colloscope = ColleManager().classe2colloscope_transpose(classe, semin, semax)
+
+    for c in colloscope:
+        matiere, creneau, first_colle, semaine_creneau = c
+        if creneau is None: continue
+
+        items = []
+
+        if matiere is None: items.append( '' )
+        else: items.append( matiere.nom )
+
+        items.append( semaine[creneau.jour] )
+        horaire = creneau.heure
+        heure = horaire / 60
+        minutes = horaire % 60
+        items.append( '%02dH%02d' % (heure, minutes) )
+
+        if first_colle is not None:
+            items.append( first_colle.colleur.user.last_name )
+            items.append( first_colle.colleur.user.first_name )
+        else:
+            items += [ '', '' ]
+        
+        if creneau.salle:
+            items.append( creneau.salle )
+        else:
+            items.append( '' )
+
+        for colle in semaine_creneau:
+            if colle is None:
+                items.append( '' )
+            elif colle.matiere.temps == 20:
+                items.append( str(colle.groupe.nom) )
+            elif colle.matiere.temps == 30:
+                items.append( colle.eleve.user.first_name + ' ' + colle.eleve.user.last_name )
+            else:
+                raise ValueError
+
+        csv += ', '.join(items) + '\n'
+
+    response = HttpResponse(csv, content_type="text/csv; charset=utf-8")
+    response['Content-Disposition'] = 'attachment; filename="colloscope-%s.csv"' % classe.nom
+    return response
 
 @user_passes_test(is_colleur, login_url='accueil')
 def colloscope2(request,id_classe,id_semin,id_semax):
@@ -489,6 +565,16 @@ def colloscopePdf(request,id_classe,id_semin,id_semax):
 	if classe not in request.user.colleur.classes.all():
 		raise Http404
 	return Pdf(classe,semin,semax)
+
+@user_passes_test(is_colleur, login_url='accueil')
+def trombinoscope(request,id_classe):
+    classe = get_object_or_404(Classe,pk=id_classe)
+    eleves = classe.classeeleve.order_by('user__last_name', 'user__first_name')
+    return render(request,'colleur/trombinoscope.html',
+            {
+                'eleves':eleves,
+                'classe':classe
+            })
 
 @user_passes_test(is_colleur, login_url='accueil')
 def eleves(request,id_classe):
