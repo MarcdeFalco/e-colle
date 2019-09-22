@@ -44,7 +44,7 @@
 	<tr class="entete">
 		<td>Jour</td>
 		{% for jour in jours %}
-		<td colspan="{{jour.nb}}">{{listejours|lookup:jour.jour}}</td>
+		<td colspan="{{jour.nb}}" style="border: 1px solid black">{{listejours|lookup:jour.jour}}</td>
 		{% endfor %}
 	</tr>
 	<tr class="plusclair" id="suppr">
